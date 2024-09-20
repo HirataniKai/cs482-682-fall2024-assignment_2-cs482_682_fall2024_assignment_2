@@ -3,6 +3,8 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression,LinearRegression
 import argparse
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+import matplotlib.pyplot as plt
+
 
 class MyLogisticRegression:
     def __init__(self, dataset_num, perform_test):
@@ -145,6 +147,28 @@ class MyLogisticRegression:
         precision, recall, f1, support = precision_recall_fscore_support(self.y_test, y_pred, average=None)
 
         return [accuracy, precision, recall, f1, support]
+    
+    def plot_decision_boundary(self, model, dataset, dataset_num):
+        # Set min and max values and give it some padding
+        x_min, x_max = self.X_train[:, 0].min() - 1, self.X_train[:, 0].max() + 1
+        y_min, y_max = self.X_train[:, 1].min() - 1, self.X_train[:, 1].max() + 1
+        h = 0.02  # step size in the mesh
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                            np.arange(y_min, y_max, h))
+
+        # Predict the function value for the whole gid
+        Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+        Z = Z.reshape(xx.shape)
+
+        # Plot the contour and training examples
+        plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.Spectral)
+        plt.scatter(self.X_train[:, 0], self.X_train[:, 1], c=self.y_train, s=20, edgecolor='k', cmap=plt.cm.Spectral)
+        plt.xlim(xx.min(), xx.max())
+        plt.ylim(yy.min(), yy.max())
+        plt.title(f"Decision Boundary for dataset {dataset_num} - {'Logistic' if isinstance(model, LogisticRegression) else 'Linear'} Regression")
+        plt.xlabel('Exam Score 1')
+        plt.ylabel('Exam Score 2')
+        plt.show()
         
 
 if __name__ == '__main__':
@@ -152,6 +176,17 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dataset_num', type=str, default="1", choices=["1", "2"], help='Dataset number. For example, 1 or 2')
     parser.add_argument('-t', '--perform_test', action='store_true', help='Flag to indicate if testing should be performed')
     args = parser.parse_args()
+     # Create instances for each dataset
+    for dataset_num in ['1', '2']:
+        classifier = MyLogisticRegression(dataset_num, args.perform_test)
+
+        # Predict and plot for linear model
+        classifier.model_predict_linear()  # Ensure the model is fitted
+        classifier.plot_decision_boundary(classifier.model_linear, 'train', dataset_num)
+
+        # Predict and plot for logistic model
+        classifier.model_predict_logistic()  # Ensure the model is fitted
+        classifier.plot_decision_boundary(classifier.model_logistic, 'train', dataset_num)
 
     # Create an instance of the classifier
     classifier = MyLogisticRegression(args.dataset_num, args.perform_test)
