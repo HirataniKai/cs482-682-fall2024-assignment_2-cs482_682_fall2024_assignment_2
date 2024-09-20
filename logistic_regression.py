@@ -28,64 +28,142 @@ class MyLogisticRegression:
             test_dataset_file = 'test_q1_2.csv'
         else:
             print("unsupported dataset number")
-            
+            return
+        
         self.training_set = pd.read_csv(train_dataset_file, sep=',', header=0)
         if self.perform_test:
             self.test_set = pd.read_csv(test_dataset_file, sep=',', header=0)
+
+        # Ensure to extract features and target correctly
+        self.X_train = self.training_set[['exam_score_1', 'exam_score_2']].values
+        self.y_train = self.training_set['label'].values
+        
+        if self.perform_test:
+            self.X_test = self.test_set[['exam_score_1', 'exam_score_2']].values
+            self.y_test = self.test_set['label'].values
+
         
         
     def model_fit_linear(self):
         '''
         initialize self.model_linear here and call the fit function
         '''
+        # Initialize the model
+        self.model_linear = LinearRegression()
+        
+        # Fit the model
+        self.model_linear.fit(self.X_train, self.y_train)
+        
         pass
     
     def model_fit_logistic(self):
         '''
         initialize self.model_logistic here and call the fit function
         '''
+        
+        # Initialize the model 
+        self.model_logistic = LogisticRegression()
+        
+        # Fit the model aka training the model with our data
+        self.model_logistic.fit(self.X_train, self.y_train)
 
         pass
     
+    # def model_predict_linear(self):
+    #     '''
+    #     Calculate and return the accuracy, precision, recall, f1, support of the model.
+    #     '''
+    #     self.model_fit_linear()
+    #     accuracy = 0.0
+    #     precision, recall, f1, support = np.array([0,0]), np.array([0,0]), np.array([0,0]), np.array([0,0])
+    #     assert self.model_linear is not None, "Initialize the model, i.e. instantiate the variable self.model_linear in model_fit_linear method"
+    #     assert self.training_set is not None, "self.read_csv function isn't called or the self.trianing_set hasn't been initialized "
+        
+    #     if self.X_test is not None:
+    #         # perform prediction here
+    #         y_pred_continuous = self.model_linear.predict(self.X_test)
+
+    #         # Convert continuous predictions to binary - Method: threshold
+    #         y_pred = np.where(y_pred_continuous >= 0.5, 1, 0)
+
+    #         # Calculate metrics
+    #         accuracy = accuracy_score(self.y_test, y_pred)
+    #         precision, recall, f1, support = precision_recall_fscore_support(self.y_test, y_pred, average='binary')
+
+    #         return [accuracy, precision, recall, f1, support]
+    #     else:
+    #         raise ValueError("X_test or y_test not defined.")
     def model_predict_linear(self):
         '''
         Calculate and return the accuracy, precision, recall, f1, support of the model.
         '''
         self.model_fit_linear()
-        accuracy = 0.0
-        precision, recall, f1, support = np.array([0,0]), np.array([0,0]), np.array([0,0]), np.array([0,0])
-        assert self.model_linear is not None, "Initialize the model, i.e. instantiate the variable self.model_linear in model_fit_linear method"
-        assert self.training_set is not None, "self.read_csv function isn't called or the self.trianing_set hasn't been initialized "
+        if self.X_test is None or self.y_test is None:
+            raise ValueError("X_test or y_test not defined.")
         
-        if self.X_test is not None:
-            # perform prediction here
-            pass
-        
-        assert precision.shape == recall.shape == f1.shape == support.shape == (2,), "precision, recall, f1, support should be an array of shape (2,)"
-        return [accuracy, precision, recall, f1, support]
+        y_pred_continuous = self.model_linear.predict(self.X_test)
+        y_pred = np.where(y_pred_continuous >= 0.5, 1, 0)
 
+        accuracy = accuracy_score(self.y_test, y_pred)
+        precision, recall, f1, support = precision_recall_fscore_support(self.y_test, y_pred, average=None)
+
+        return [accuracy, precision, recall, f1, support]
+            
+     
+
+    # def model_predict_logistic(self):
+    #     '''
+    #     Calculate and return the accuracy, precision, recall, f1, support of the model.
+    #     '''
+    #     self.model_fit_logistic()
+    #     accuracy = 0.0
+    #     precision, recall, f1, support = np.array([0,0]), np.array([0,0]), np.array([0,0]), np.array([0,0])
+    #     assert self.model_logistic is not None, "Initialize the model, i.e. instantiate the variable self.model_logistic in model_fit_logistic method"
+    #     assert self.training_set is not None, "self.read_csv function isn't called or the self.trianing_set hasn't been initialized "
+    #     if self.X_test is not None:
+    #         # Predict class labels directly
+    #         y_pred = self.model_logistic.predict(self.X_test)
+
+    #         # Calculate metrics
+    #         accuracy = accuracy_score(self.y_test, y_pred)
+    #         precision, recall, f1, support = precision_recall_fscore_support(self.y_test, y_pred, average='binary')
+
+    #         return [accuracy, precision, recall, f1, support]
+    #     else:
+    #         raise ValueError("X_test or y_test not defined.")
     def model_predict_logistic(self):
         '''
         Calculate and return the accuracy, precision, recall, f1, support of the model.
         '''
         self.model_fit_logistic()
-        accuracy = 0.0
-        precision, recall, f1, support = np.array([0,0]), np.array([0,0]), np.array([0,0]), np.array([0,0])
-        assert self.model_logistic is not None, "Initialize the model, i.e. instantiate the variable self.model_logistic in model_fit_logistic method"
-        assert self.training_set is not None, "self.read_csv function isn't called or the self.trianing_set hasn't been initialized "
-        if self.X_test is not None:
-            # perform prediction here
-            pass
+        if self.X_test is None or self.y_test is None:
+            raise ValueError("X_test or y_test not defined.")
         
-        assert precision.shape == recall.shape == f1.shape == support.shape == (2,), "precision, recall, f1, support should be an array of shape (2,)"
+        y_pred = self.model_logistic.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, y_pred)
+        precision, recall, f1, support = precision_recall_fscore_support(self.y_test, y_pred, average=None)
+
         return [accuracy, precision, recall, f1, support]
+        
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Linear Regression')
-    parser.add_argument('-d','--dataset_num', type=str, default = "1", choices=["1","2"], help='string indicating datset number. For example, 1 or 2')
-    parser.add_argument('-t','--perform_test', action='store_true', help='boolean to indicate inference')
+    parser = argparse.ArgumentParser(description='Logistic and Linear Regression Model Testing')
+    parser.add_argument('-d', '--dataset_num', type=str, default="1", choices=["1", "2"], help='Dataset number. For example, 1 or 2')
+    parser.add_argument('-t', '--perform_test', action='store_true', help='Flag to indicate if testing should be performed')
     args = parser.parse_args()
+
+    # Create an instance of the classifier
     classifier = MyLogisticRegression(args.dataset_num, args.perform_test)
-    acc = classifier.model_predict_linear()
-    acc = classifier.model_predict_logistic()
-    
+
+    # Check if testing should be performed
+    if args.perform_test:
+        if classifier.X_test is not None and classifier.y_test is not None:
+            linear_metrics = classifier.model_predict_linear()
+            logistic_metrics = classifier.model_predict_logistic()
+            print("Linear Model Metrics:", linear_metrics)
+            print("Logistic Model Metrics:", logistic_metrics)
+        else:
+            print("Test data not defined or not loaded correctly.")
+    else:
+        print("Testing flag not set. No predictions will be made.")
